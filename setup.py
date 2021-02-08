@@ -44,7 +44,7 @@ def get_version(version_file):
 setup(
     name="hash-http-content",
     # Versions should comply with PEP440
-    version=get_version("src/example/_version.py"),
+    version=get_version("src/hash_http_content/_version.py"),
     description="HTTP content hasher",
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -99,5 +99,5 @@ setup(
         ]
     },
     # Conveniently allows one to run the CLI tool as `hash-url`
-    entry_points={"console_scripts": ["hash-url = example.example:main"]},
+    entry_points={"console_scripts": ["hash-url = hash_http_content.cli:main"]},
 )
