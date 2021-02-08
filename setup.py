@@ -1,5 +1,5 @@
 """
-This is the setup module for the example project.
+This is the setup module for the hash-http-content project.
 
 Based on:
 
@@ -42,16 +42,16 @@ def get_version(version_file):
 
 
 setup(
-    name="example",
+    name="hash-http-content",
     # Versions should comply with PEP440
     version=get_version("src/example/_version.py"),
-    description="Example python library",
+    description="HTTP content hasher",
     long_description=readme(),
     long_description_content_type="text/markdown",
     # NCATS "homepage"
     url="https://www.us-cert.gov/resources/ncats",
     # The project's main homepage
-    download_url="https://github.com/cisagov/skeleton-python-library",
+    download_url="https://github.com/cisagov/hash-http-content",
     # Author details
     author="Cyber and Infrastructure Security Agency",
     author_email="ncats@hq.dhs.gov",
@@ -77,10 +77,9 @@ setup(
     ],
     python_requires=">=3.6",
     # What does your project relate to?
-    keywords="skeleton",
+    keywords="hash http requests",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    package_data={"example": ["data/*.txt"]},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     include_package_data=True,
     install_requires=["docopt", "schema", "setuptools >= 24.2.0"],
@@ -99,6 +98,6 @@ setup(
             "pytest",
         ]
     },
-    # Conveniently allows one to run the CLI tool as `example`
-    entry_points={"console_scripts": ["example = example.example:main"]},
+    # Conveniently allows one to run the CLI tool as `hash-url`
+    entry_points={"console_scripts": ["hash-url = example.example:main"]},
 )
