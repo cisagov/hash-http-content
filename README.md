@@ -6,20 +6,34 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/cisagov/hash-http-content.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/hash-http-content/context:python)
 [![Known Vulnerabilities](https://snyk.io/test/github/cisagov/hash-http-content/develop/badge.svg)](https://snyk.io/test/github/cisagov/hash-http-content)
 
-This is a generic skeleton project that can be used to quickly get a
-new [cisagov](https://github.com/cisagov) Python library GitHub
-project started.  This skeleton project contains [licensing
-information](LICENSE), as well as
-[pre-commit hooks](https://pre-commit.com) and
-[GitHub Actions](https://github.com/features/actions) configurations
-appropriate for a Python library project.
+This is a Python library to retrieve the contents of a given HTTP URL and hash
+the processed contents.
 
-## New Repositories from a Skeleton ##
+## Content processing ##
 
-Please see our [Project Setup guide](https://github.com/cisagov/development-guide/tree/develop/project_setup)
-for step-by-step instructions on how to start a new repository from
-a skeleton. This will save you time and effort when configuring a
-new repository!
+If an encoding is detected, this package will convert content into the UTF-8
+encoding before proceeding.
+
+Additional content processing is currently implemented for the following types
+of content:
+
+* HTML
+* JSON
+
+### HTML ###
+
+HTML content is processed by leveraging the
+[pyppeteer](https://github.com/pyppeteer/pyppeteer) package to execute any
+JavaScript on a retrieved page. The result is then parsed by
+[Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/) to reduce the
+content to the human visible portions of a page.
+
+### JSON ###
+
+JSON content is processed by using the
+[`json` library](https://docs.python.org/3/library/json.html) that is part of
+the Python standard library. It is read in and then output in a deterministic
+manner to adjust for any styling differences between content.
 
 ## Contributing ##
 
