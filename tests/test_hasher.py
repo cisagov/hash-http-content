@@ -265,26 +265,47 @@ def test_browser_additional_options():
         ],
         "executablePath": "tests/files/serverless-chrome",
     }
+    with open(TEST_VALUE_SOURCES["plaintext"]) as f:
+        test_value = f.read()
+    test_bytes = bytes(test_value, ALT_ENCODING)
+    expected_bytes = bytes(test_value, "utf-8")
 
     hasher = hash_http_content.UrlHasher(HASH_ALGORITHM, browser_options=options)
+    result = hasher._handle_plaintext(test_bytes, ALT_ENCODING)
 
     assert hasher._UrlHasher__browser_options == options
+    assert result.hash == EXPECTED_DIGESTS["plaintext"]
+    assert result.contents == expected_bytes
 
 
 def test_browser_with_specified_executable():
     """Test running with the executablePath option."""
+    serverless_chrome_path = "tests/files/headless-chromium"
     # If this file does not exist, do not perform this test.
-    if not os.path.isfile("tests/files/serverless-chrome"):
+    if not os.path.isfile(serverless_chrome_path):
         pytest.skip("no serverless-chrome binary found")
 
-    # options = {
-    #     "headless": True,
-    #     "args": [
-    #         "--no-sandbox",
-    #         "--single-process",
-    #         "--disable-dev-shm-usage",
-    #         "--disable-gpu",
-    #         "--no-zygote",
-    #     ],
-    #     "executablePath": "tests/files/serverless-chrome",
-    # }
+    # These options are expected for a lambda style environment
+    options = {
+        "headless": True,
+        "args": [
+            "--no-sandbox",
+            "--single-process",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--no-zygote",
+        ],
+        "executablePath": serverless_chrome_path,
+    }
+
+    with open(TEST_VALUE_SOURCES["plaintext"]) as f:
+        test_value = f.read()
+    test_bytes = bytes(test_value, ALT_ENCODING)
+    expected_bytes = bytes(test_value, "utf-8")
+
+    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM, browser_options=options)
+    result = hasher._handle_plaintext(test_bytes, ALT_ENCODING)
+
+    assert hasher._UrlHasher__browser_options == options
+    assert result.hash == EXPECTED_DIGESTS["plaintext"]
+    assert result.contents == expected_bytes
