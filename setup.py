@@ -85,6 +85,7 @@ setup(
     install_requires=[
         "beautifulsoup4",
         "docopt",
+        "lxml",
         "pyppeteer",
         "requests",
         "schema",
