@@ -2,6 +2,7 @@
 
 # Standard Python Libraries
 import hashlib
+from typing import NamedTuple
 
 
 def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
@@ -28,3 +29,20 @@ def get_hash_digest(hash_algorithm: str, contents: bytes) -> str:
     hasher: "hashlib._Hash" = get_hasher(hash_algorithm)
     hasher.update(contents)
     return hasher.hexdigest()
+
+
+class HandlerResult(NamedTuple):
+    """Named tuple to store the result of a handler call."""
+
+    hash: str
+    contents: bytes
+
+
+class UrlResult(NamedTuple):
+    """Named tuple to store the result of a SiteHasher.hash_url() call."""
+
+    status: int
+    visited_url: str
+    is_redirect: bool
+    hash: str
+    contents: bytes
