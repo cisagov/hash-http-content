@@ -74,10 +74,11 @@ class UrlHasher:
         self._default_encoding = encoding
         self._hash_algorithm = hash_algorithm
 
-        self._handlers: Dict[str, Callable] = {}
-        self._handlers["text/plain"] = self._handle_plaintext
-        self._handlers["application/json"] = self._handle_json
-        self._handlers["text/html"] = self._handle_html
+        self._handlers: Dict[str, Callable] = {
+            "application/json": self._handle_json,
+            "text/html": self._handle_html,
+            "text/plain": self._handle_plaintext,
+        }
 
     def __init_browser(self):
         """Initialize the pyppeteer Browser if it does not exist."""
