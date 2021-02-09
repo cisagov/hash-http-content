@@ -191,6 +191,7 @@ class UrlHasher:
         # Pull off any parameters included
         if ";" in content_type:
             content_type = content_type.split(";", 1)[0]
+        logging.debug("Using content type '%s'", content_type)
 
         logging.debug("Checking for a redirect in the request")
         is_redirect = False
@@ -199,10 +200,19 @@ class UrlHasher:
                 is_redirect = True
                 break
 
-        # Default to processing as raw bytes if no appropriate handler is found
-        processed: HandlerResult = self._handlers.get(
-            content_type, self._handle_raw_bytes
-        )(resp.content, resp.encoding)
+        processed: HandlerResult
+        # If the content appears to be text, we should fall back to processing it
+        # as plaintext instead of raw bytes.
+        if resp.apparent_encoding == "ascii":
+            # Default to processing as plaintext if no appropriate handler is found
+            processed = self._handlers.get(content_type, self._handle_plaintext)(
+                resp.content, resp.encoding
+            )
+        else:
+            # Default to processing as raw bytes if no appropriate handler is found
+            processed = self._handlers.get(content_type, self._handle_raw_bytes)(
+                resp.content, resp.encoding
+            )
 
         return UrlResult(
             resp.status_code, resp.url, is_redirect, processed.hash, processed.contents
