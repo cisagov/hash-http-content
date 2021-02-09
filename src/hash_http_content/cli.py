@@ -97,9 +97,9 @@ def main():
                 print()
                 print("Contents:")
                 print(url_results.contents)
-        print()
+            print()
 
     if validated_args["--json"]:
-        print(dumps(results))
+        print(dumps(results, separators=(",", ":"), sort_keys=True))
 
     return 0
