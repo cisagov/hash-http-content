@@ -227,7 +227,7 @@ def test_hash_url_html_status_200():
     assert result.hash == expected_digest
 
 
-def test_hash_url_html_status_400():
+def test_hash_url_html_status_404():
     """Test against a URL that returns HTML content from a missing location."""
     test_url = "https://example.com/404"
     expected_digest = "6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2"

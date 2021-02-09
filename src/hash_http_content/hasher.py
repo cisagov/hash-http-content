@@ -4,6 +4,7 @@
 import asyncio
 import hashlib
 import json
+import logging
 from typing import Any, Callable, Dict, NamedTuple
 
 # Third-Party Libraries
@@ -17,6 +18,7 @@ import requests
 
 def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
     """Get a hashing object."""
+    logging.debug("Creating a %s hashing object", hash_algorithm)
     # Not all implementations support the "usedforsecurity" keyword argument,
     # which is used to indicate that the algorithm is being used for non-security
     # related tasks. This is required for some algorithms on FIPS systems.
@@ -36,6 +38,11 @@ def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
 
 def get_hash_digest(hash_algorithm: str, contents: bytes) -> str:
     """Get a hex digest representing a hash of the given contents."""
+    logging.debug(
+        "Generating a %s digest for provided content of length %d",
+        hash_algorithm,
+        len(contents),
+    )
     hasher: "hashlib._Hash" = get_hasher(hash_algorithm)
     hasher.update(contents)
     return hasher.hexdigest()
@@ -68,11 +75,19 @@ class UrlHasher:
         browser_options: Dict[str, Any] = {},
     ):
         """Initialize an instance of this class."""
+        logging.debug("Initializing UrlHasher object")
         default_browser_options = {"headless": True}
+        logging.debug("Default browser options: %s", default_browser_options)
+
         self.__browser_options = {**default_browser_options, **browser_options}
+        logging.debug("Using browser options: %s", self.__browser_options)
+
         self._browser: Browser = None
         self._default_encoding = encoding
         self._hash_algorithm = hash_algorithm
+
+        logging.debug("Using default encoding '%s'", self._default_encoding)
+        logging.debug("Using hashing algorithm '%s'", self._hash_algorithm)
 
         self._handlers: Dict[str, Callable] = {
             "application/json": self._handle_json,
@@ -83,6 +98,7 @@ class UrlHasher:
     def __init_browser(self):
         """Initialize the pyppeteer Browser if it does not exist."""
         if not self._browser:
+            logging.debug("Initializing Browser object")
             self._browser = asyncio.get_event_loop().run_until_complete(
                 launch(**self.__browser_options)
             )
@@ -91,18 +107,22 @@ class UrlHasher:
         """Return True if the given website element would be visible."""
         discard_tags = ["[document]", "script", "style"]
         if isinstance(element, Comment):
+            logging.debug("Skipping Comment tag")
             return False
         if element.parent.name in discard_tags:
+            logging.debug("Skipping element in parent tag '%s'", element.parent.name)
             return False
         return True
 
     def _handle_raw_bytes(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle bytes in an unspecified format or encoding."""
+        logging.debug("Handling content as raw bytes")
         digest: str = get_hash_digest(self._hash_algorithm, contents)
         return HandlerResult(digest, contents)
 
     def _handle_plaintext(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle plaintext contents."""
+        logging.debug("Handling content as plaintext")
         if encoding:
             contents = bytes(contents.decode(encoding), self._default_encoding)
         digest: str = get_hash_digest(self._hash_algorithm, contents)
@@ -110,6 +130,7 @@ class UrlHasher:
 
     def _handle_json(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle JSON contents."""
+        logging.debug("Handling content as JSON")
         # Translate the original encoding to utf-8
         if encoding:
             json_str = str(contents, encoding)
@@ -129,6 +150,7 @@ class UrlHasher:
 
     def _handle_html(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle an HTML page."""
+        logging.debug("Handling content as HTML")
         self.__init_browser()
 
         if encoding:
@@ -136,6 +158,7 @@ class UrlHasher:
         else:
             html = str(contents, self._default_encoding)
 
+        logging.debug("Setting page contents and rendering")
         page: Page = asyncio.get_event_loop().run_until_complete(
             self._browser.newPage()
         )
@@ -143,6 +166,7 @@ class UrlHasher:
         page_contents: str = asyncio.get_event_loop().run_until_complete(page.content())
         asyncio.get_event_loop().run_until_complete(page.close())
 
+        logging.debug("Parsing rendered page contents")
         soup: BeautifulSoup = BeautifulSoup(page_contents, "lxml")
         text_elements = soup.find_all(text=True)
         visible_text_elements = filter(self._is_visible_element, text_elements)
@@ -155,6 +179,7 @@ class UrlHasher:
 
     def hash_url(self, url: str) -> UrlResult:
         """Get a hash of the contents of the provided URL."""
+        logging.debug("Hashing provided URL '%s'", url)
         redirect_status_codes = [301, 307, 308]
         resp = requests.get(url)
 
@@ -167,6 +192,7 @@ class UrlHasher:
         if ";" in content_type:
             content_type = content_type.split(";", 1)[0]
 
+        logging.debug("Checking for a redirect in the request")
         is_redirect = False
         for r in resp.history:
             if r.status_code in redirect_status_codes:
