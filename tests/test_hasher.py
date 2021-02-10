@@ -253,7 +253,7 @@ def test_hash_url_with_redirect():
 
 def test_browser_additional_options():
     """Verify that additional options are used in invoking the browser."""
-    # These options are expected for a lambda style environment
+    # These options are expected for an AWS Lambda style environment
     options = {
         "headless": True,
         "args": [
@@ -285,7 +285,7 @@ def test_browser_with_specified_executable():
     if not os.path.isfile(serverless_chrome_path):
         pytest.skip("no serverless-chrome binary found")
 
-    # These options are expected for a lambda style environment
+    # These options are expected for an AWS Lambda style environment
     options = {
         "headless": True,
         "args": [

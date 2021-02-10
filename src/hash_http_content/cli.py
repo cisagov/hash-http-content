@@ -1,4 +1,4 @@
-"""Command line interface to the hash-url-content package.
+"""Command line interface to the hash-http-content package.
 
 Usage:
   site-hash [--hash-algorithm=algorithm] ([--show-content] [--show-redirect] | [--json]) URL ...

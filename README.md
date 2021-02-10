@@ -6,8 +6,8 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/cisagov/hash-http-content.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/hash-http-content/context:python)
 [![Known Vulnerabilities](https://snyk.io/test/github/cisagov/hash-http-content/develop/badge.svg)](https://snyk.io/test/github/cisagov/hash-http-content)
 
-This is a Python library to retrieve the contents of a given HTTP URL and hash
-the processed contents.
+This is a Python library to retrieve the contents of a given URL via HTTP (or
+HTTPS) and hash the processed contents.
 
 ## Content processing ##
 
