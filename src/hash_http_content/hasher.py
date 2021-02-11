@@ -190,7 +190,17 @@ class UrlHasher:
     def hash_url(self, url: str) -> UrlResult:
         """Get a hash of the contents of the provided URL."""
         logging.debug("Hashing provided URL '%s'", url)
-        redirect_status_codes = [301, 307, 308]
+
+        # These values were chosen to keep in line with the type of redirection
+        # that indicates the desirted resource is at a different URI per
+        # https://tools.ietf.org/html/rfc7231#section-6.4
+        # 1. Redirects that indicate the resource might be available at a
+        #    different URI, as provided by the Location field, as in the
+        #    status codes 301 (Moved Permanently), 302 (Found), and 307
+        #    (Temporary Redirect).
+        # This follows the logic in the creation of status code 308 per
+        # https://tools.ietf.org/html/rfc7238#section-1
+        redirect_status_codes = [301, 302, 307, 308]
         resp = requests.get(url)
 
         # https://tools.ietf.org/html/rfc7231#section-3.1.1.5
