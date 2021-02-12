@@ -192,7 +192,7 @@ class UrlHasher:
         logging.debug("Hashing provided URL '%s'", url)
 
         # These values were chosen to keep in line with the type of redirection
-        # that indicates the desirted resource is at a different URI per
+        # that indicates the desired resource is at a different URI per
         # https://tools.ietf.org/html/rfc7231#section-6.4
         # 1. Redirects that indicate the resource might be available at a
         #    different URI, as provided by the Location field, as in the
