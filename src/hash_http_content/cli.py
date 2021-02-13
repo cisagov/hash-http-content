@@ -77,6 +77,7 @@ def main():
             # excluded from JSON results.
             results.append(
                 {
+                    "content_type": url_results.content_type,
                     "contents_hash": url_results.hash,
                     "is_redirected": url_results.is_redirect,
                     "requested_url": url,
@@ -88,6 +89,7 @@ def main():
             print(f"Results for {url}:")
             print(f"  Retrieved URL - '{url_results.visited_url}'")
             print(f"  Status code - '{url_results.status}'")
+            print(f"  Content type - '{url_results.content_type}'")
             if validated_args["--show-redirect"]:
                 print(f"  Redirect - {url_results.is_redirect}")
             print(

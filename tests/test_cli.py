@@ -88,6 +88,7 @@ def test_full_run_no_http_schema(capsys):
             "Results for example.com:",
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
+            "  Content type - 'text/html'",
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
         ]
     )
@@ -106,6 +107,7 @@ def test_full_run_with_http_schema(capsys):
             "Results for https://example.com:",
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
+            "  Content type - 'text/html'",
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
         ]
     )
@@ -123,6 +125,7 @@ def test_full_run_no_redirect(capsys):
         "Results for http://example.com:",
         "  Retrieved URL - 'http://example.com/'",
         "  Status code - '200'",
+        "  Content type - 'text/html'",
         "  Redirect - False",
     ]
     with patch.object(sys, "argv", ["bogus", "--show-redirect", "http://example.com"]):
@@ -142,6 +145,7 @@ def test_full_run_with_redirect(capsys):
         "Results for http://rules.ncats.cyber.dhs.gov:",
         "  Retrieved URL - 'https://rules.ncats.cyber.dhs.gov/'",
         "  Status code - '200'",
+        "  Content type - 'text/plain'",
         "  Redirect - True",
     ]
     with patch.object(
@@ -164,6 +168,7 @@ def test_full_run_with_content(capsys):
             "Results for https://example.com:",
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
+            "  Content type - 'text/html'",
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
             "",
             "Contents:",
@@ -185,6 +190,7 @@ def test_full_run_check_redirect_with_content(capsys):
             "Results for https://example.com:",
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
+            "  Content type - 'text/html'",
             "  Redirect - False",
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
             "",
@@ -208,6 +214,7 @@ def test_full_run_json_output(capsys):
     """Validate JSON output for a given URL."""
     expected_result = [
         {
+            "content_type": "text/html",
             "contents_hash": "6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
             "is_redirected": False,
             "requested_url": "https://example.com",

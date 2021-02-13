@@ -71,6 +71,7 @@ class UrlResult(NamedTuple):
     status: int
     visited_url: str
     is_redirect: bool
+    content_type: str
     hash: str
     contents: bytes
 
@@ -235,5 +236,10 @@ class UrlHasher:
             )
 
         return UrlResult(
-            resp.status_code, resp.url, is_redirect, processed.hash, processed.contents
+            resp.status_code,
+            resp.url,
+            is_redirect,
+            content_type,
+            processed.hash,
+            processed.contents,
         )
