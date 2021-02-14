@@ -90,6 +90,10 @@ class UrlHasher:
         default_browser_options = {"headless": True}
         logging.debug("Default browser options: %s", default_browser_options)
 
+        # Timeout in seconds
+        self._timeout = 5
+        logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
+
         self.__browser_options = {**default_browser_options, **browser_options}
         logging.debug("Using browser options: %s", self.__browser_options)
 
@@ -202,7 +206,7 @@ class UrlHasher:
         # This follows the logic in the creation of status code 308 per
         # https://tools.ietf.org/html/rfc7238#section-1
         redirect_status_codes = [301, 302, 307, 308]
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=self._timeout)
 
         # https://tools.ietf.org/html/rfc7231#section-3.1.1.5
         content_type = (
