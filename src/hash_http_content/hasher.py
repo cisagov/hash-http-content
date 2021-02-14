@@ -5,6 +5,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import tempfile
 from typing import Any, Callable, Dict, NamedTuple
 
 # Third-Party Libraries
@@ -168,18 +169,37 @@ class UrlHasher:
         logging.debug("Handling content as HTML")
         self.__init_browser()
 
-        if encoding:
-            html = str(contents, encoding)
-        else:
-            html = str(contents, self._default_encoding)
+        # Until the Page.setContent() method allows options, writing the HTML
+        # document to a temporary file and navigating to it with Page.goto() is
+        # the only way to leverage the `waitUntil` option to give time for the
+        # page's contents to load. Support for options in Page.setContent() is
+        # expected in pyppeteer when the puppeteer v2.1.1 feature parity rewrite
+        # is completed per:
+        # https://github.com/pyppeteer/pyppeteer/issues/134 for more information
+        with tempfile.NamedTemporaryFile(suffix=".html") as fp:
+            # Output to a temporary file so it's available to the browser
+            fp.write(contents)
+            fp.flush()
 
-        logging.debug("Setting page contents and rendering")
-        page: Page = asyncio.get_event_loop().run_until_complete(
-            self._browser.newPage()
+            page: Page = asyncio.get_event_loop().run_until_complete(
+                self._browser.newPage()
+            )
+
+            logging.debug("Navigating to temporary file '%s'", fp.name)
+            # Wait for everything to load after navigating to the temporary file
+            asyncio.get_event_loop().run_until_complete(
+                page.goto(f"file://{fp.name}", {"waitUntil": ["load", "networkidle2"]})
+            )
+            page_contents: str = asyncio.get_event_loop().run_until_complete(
+                page.content()
+            )
+
+            asyncio.get_event_loop().run_until_complete(page.close())
+
+        # Try to guarantee our preferred encoding
+        page_contents = bytes(page_contents.encode(self._default_encoding)).decode(
+            self._default_encoding
         )
-        asyncio.get_event_loop().run_until_complete(page.setContent(html))
-        page_contents: str = asyncio.get_event_loop().run_until_complete(page.content())
-        asyncio.get_event_loop().run_until_complete(page.close())
 
         logging.debug("Parsing rendered page contents")
         soup: BeautifulSoup = BeautifulSoup(page_contents, "lxml")
