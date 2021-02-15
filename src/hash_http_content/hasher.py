@@ -99,6 +99,7 @@ class UrlHasher:
         logging.debug("Using browser options: %s", self.__browser_options)
 
         self._browser: Browser = None
+        self._browser_page: Page = None
         self._default_encoding = encoding
         self._hash_algorithm = hash_algorithm
 
@@ -117,6 +118,9 @@ class UrlHasher:
             logging.debug("Initializing Browser object")
             self._browser = asyncio.get_event_loop().run_until_complete(
                 launch(**self.__browser_options)
+            )
+            self._browser_page = asyncio.get_event_loop().run_until_complete(
+                self._browser.newPage()
             )
 
     def _is_visible_element(self, element: PageElement) -> bool:
@@ -181,20 +185,16 @@ class UrlHasher:
             fp.write(contents)
             fp.flush()
 
-            page: Page = asyncio.get_event_loop().run_until_complete(
-                self._browser.newPage()
-            )
-
             logging.debug("Navigating to temporary file '%s'", fp.name)
             # Wait for everything to load after navigating to the temporary file
             asyncio.get_event_loop().run_until_complete(
-                page.goto(f"file://{fp.name}", {"waitUntil": ["load", "networkidle2"]})
+                self._browser_page.goto(
+                    f"file://{fp.name}", {"waitUntil": ["load", "networkidle2"]}
+                )
             )
             page_contents: str = asyncio.get_event_loop().run_until_complete(
-                page.content()
+                self._browser_page.content()
             )
-
-            asyncio.get_event_loop().run_until_complete(page.close())
 
         # Try to guarantee our preferred encoding
         page_contents = bytes(page_contents.encode(self._default_encoding)).decode(
