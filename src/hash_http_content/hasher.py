@@ -197,9 +197,12 @@ class UrlHasher:
                 asyncio.get_event_loop().run_until_complete(
                     self._browser_page.goto(
                         f"file://{fp.name}",
-                        # Wait for load and networkidle2 events up to the given
-                        # timeout of five seconds (in milliseconds)
-                        {"timeout": 5000, "waitUntil": ["load", "networkidle2"]},
+                        {
+                            # Wait for load and networkidle2 events up to the
+                            # value of self_timeout (in milliseconds)
+                            "timeout": self._timeout * 1000,
+                            "waitUntil": ["load", "networkidle2"],
+                        },
                     )
                 )
             # Waiting for load and networkidle2 events to occur exceeded the
