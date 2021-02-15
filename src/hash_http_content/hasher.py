@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
 from pyppeteer import launch
 from pyppeteer.browser import Browser
+from pyppeteer.errors import TimeoutError
 from pyppeteer.page import Page
 import requests
 
@@ -186,12 +187,21 @@ class UrlHasher:
             fp.flush()
 
             logging.debug("Navigating to temporary file '%s'", fp.name)
-            # Wait for everything to load after navigating to the temporary file
-            asyncio.get_event_loop().run_until_complete(
-                self._browser_page.goto(
-                    f"file://{fp.name}", {"waitUntil": ["load", "networkidle2"]}
+
+            try:
+                # Wait for everything to load after navigating to the temporary file
+                asyncio.get_event_loop().run_until_complete(
+                    self._browser_page.goto(
+                        f"file://{fp.name}",
+                        # Wait for load and networkidle2 events up to the given
+                        # timeout of five seconds (in milliseconds)
+                        {"timeout": 5000, "waitUntil": ["load", "networkidle2"]},
+                    )
                 )
-            )
+            # Waiting for load and networkidle2 events to occur exceeded the
+            # configured timeout
+            except TimeoutError:
+                pass
             page_contents: str = asyncio.get_event_loop().run_until_complete(
                 self._browser_page.content()
             )
