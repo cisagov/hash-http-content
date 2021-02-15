@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 import tempfile
-from typing import Any, Callable, Dict, NamedTuple
+from typing import Any, Callable, Dict, NamedTuple, Union
 
 # Third-Party Libraries
 from bs4 import BeautifulSoup
@@ -229,7 +229,7 @@ class UrlHasher:
 
         return HandlerResult(digest, visible_bytes)
 
-    def hash_url(self, url: str) -> UrlResult:
+    def hash_url(self, url: str, verify: Union[bool, str] = True) -> UrlResult:
         """Get a hash of the contents of the provided URL."""
         logging.debug("Hashing provided URL '%s'", url)
 
@@ -249,7 +249,7 @@ class UrlHasher:
         get_tries = 0
         while True:
             try:
-                resp = requests.get(url, timeout=self._timeout)
+                resp = requests.get(url, timeout=self._timeout, verify=verify)
                 break
             except Exception as err:
                 get_tries += 1
