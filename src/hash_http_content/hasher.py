@@ -92,6 +92,10 @@ class UrlHasher:
         default_browser_options = {"headless": True}
         logging.debug("Default browser options: %s", default_browser_options)
 
+        # Number of retries
+        self._retries = 3
+        logging.debug("Using retry value of '%d'", self._retries)
+
         # Timeout in seconds
         self._timeout = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
@@ -236,7 +240,22 @@ class UrlHasher:
         # This follows the logic in the creation of status code 308 per
         # https://tools.ietf.org/html/rfc7238#section-1
         redirect_status_codes = [301, 302, 307, 308]
-        resp = requests.get(url, timeout=self._timeout)
+
+        # Attempt to retrieve the given URL, retrying self._retries times before
+        # raising an exception
+        get_tries = 0
+        while True:
+            try:
+                resp = requests.get(url, timeout=self._timeout)
+                break
+            except Exception as err:
+                get_tries += 1
+                if get_tries <= self._retries:
+                    logging.warning(
+                        "Performing retry %d/%d for '%s'", get_tries, self._retries, url
+                    )
+                else:
+                    raise err
 
         # https://tools.ietf.org/html/rfc7231#section-3.1.1.5
         content_type = (
