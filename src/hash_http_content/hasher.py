@@ -94,20 +94,23 @@ class UrlHasher:
         logging.debug("Default browser options: %s", default_browser_options)
 
         # Number of retries
-        self._retries = 3
+        self._retries: int = 3
         logging.debug("Using retry value of '%d'", self._retries)
 
         # Timeout in seconds
-        self._timeout = 5
+        self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        self.__browser_options = {**default_browser_options, **browser_options}
+        self.__browser_options: Dict[str, Any] = {
+            **default_browser_options,
+            **browser_options,
+        }
         logging.debug("Using browser options: %s", self.__browser_options)
 
         self._browser: Browser = None
         self._browser_page: Page = None
-        self._default_encoding = encoding
-        self._hash_algorithm = hash_algorithm
+        self._default_encoding: str = encoding
+        self._hash_algorithm: str = hash_algorithm
 
         logging.debug("Using default encoding '%s'", self._default_encoding)
         logging.debug("Using hashing algorithm '%s'", self._hash_algorithm)
@@ -223,8 +226,10 @@ class UrlHasher:
         soup: BeautifulSoup = BeautifulSoup(page_contents, "lxml")
         text_elements = soup.find_all(text=True)
         visible_text_elements = filter(self._is_visible_element, text_elements)
-        visible_text = " ".join(t.strip() for t in visible_text_elements if t.strip())
-        visible_bytes = bytes(visible_text, self._default_encoding)
+        visible_text: str = " ".join(
+            t.strip() for t in visible_text_elements if t.strip()
+        )
+        visible_bytes: bytes = bytes(visible_text, self._default_encoding)
 
         digest: str = get_hash_digest(self._hash_algorithm, visible_bytes)
 
@@ -267,7 +272,7 @@ class UrlHasher:
                     raise err
 
         # https://tools.ietf.org/html/rfc7231#section-3.1.1.5
-        content_type = (
+        content_type: str = (
             resp.headers.get("content-type", "application/octet-stream").strip().lower()
         )
 
