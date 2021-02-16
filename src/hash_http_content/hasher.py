@@ -16,6 +16,7 @@ from pyppeteer.browser import Browser
 from pyppeteer.errors import TimeoutError
 from pyppeteer.page import Page
 import requests
+from requests.exceptions import ConnectionError, Timeout
 
 
 def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
@@ -251,7 +252,12 @@ class UrlHasher:
             try:
                 resp = requests.get(url, timeout=self._timeout, verify=verify)
                 break
-            except Exception as err:
+            except (ConnectionError, Timeout) as err:
+                logging.debug(
+                    "Encountered a(n) %s exception while attempting to GET from '%s'",
+                    type(err).__name__,
+                    url,
+                )
                 get_tries += 1
                 if get_tries <= self._retries:
                     logging.warning(
