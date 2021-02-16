@@ -7,6 +7,6 @@ from typing import List
 # package_name.__version__, which is used to get version information about this
 # Python package.
 from ._version import __version__  # noqa: F401
-from .hasher import UrlHasher
+from .hasher import UrlHasher, UrlResult
 
-__all__: List[str] = ["UrlHasher"]
+__all__: List[str] = ["UrlHasher", "UrlResult"]
