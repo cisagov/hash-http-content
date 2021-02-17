@@ -1,25 +1,39 @@
-# skeleton-python-library #
+# hash-http-content #
 
-[![GitHub Build Status](https://github.com/cisagov/skeleton-python-library/workflows/build/badge.svg)](https://github.com/cisagov/skeleton-python-library/actions)
-[![Coverage Status](https://coveralls.io/repos/github/cisagov/skeleton-python-library/badge.svg?branch=develop)](https://coveralls.io/github/cisagov/skeleton-python-library?branch=develop)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/cisagov/skeleton-python-library.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/skeleton-python-library/alerts/)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/cisagov/skeleton-python-library.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/skeleton-python-library/context:python)
-[![Known Vulnerabilities](https://snyk.io/test/github/cisagov/skeleton-python-library/develop/badge.svg)](https://snyk.io/test/github/cisagov/skeleton-python-library)
+[![GitHub Build Status](https://github.com/cisagov/hash-http-content/workflows/build/badge.svg)](https://github.com/cisagov/hash-http-content/actions)
+[![Coverage Status](https://coveralls.io/repos/github/cisagov/hash-http-content/badge.svg?branch=develop)](https://coveralls.io/github/cisagov/hash-http-content?branch=develop)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/cisagov/hash-http-content.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/hash-http-content/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/cisagov/hash-http-content.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/cisagov/hash-http-content/context:python)
+[![Known Vulnerabilities](https://snyk.io/test/github/cisagov/hash-http-content/develop/badge.svg)](https://snyk.io/test/github/cisagov/hash-http-content)
 
-This is a generic skeleton project that can be used to quickly get a
-new [cisagov](https://github.com/cisagov) Python library GitHub
-project started.  This skeleton project contains [licensing
-information](LICENSE), as well as
-[pre-commit hooks](https://pre-commit.com) and
-[GitHub Actions](https://github.com/features/actions) configurations
-appropriate for a Python library project.
+This is a Python library to retrieve the contents of a given URL via HTTP (or
+HTTPS) and hash the processed contents.
 
-## New Repositories from a Skeleton ##
+## Content processing ##
 
-Please see our [Project Setup guide](https://github.com/cisagov/development-guide/tree/develop/project_setup)
-for step-by-step instructions on how to start a new repository from
-a skeleton. This will save you time and effort when configuring a
-new repository!
+If an encoding is detected, this package will convert content into the UTF-8
+encoding before proceeding.
+
+Additional content processing is currently implemented for the following types
+of content:
+
+* HTML
+* JSON
+
+### HTML ###
+
+HTML content is processed by leveraging the
+[pyppeteer](https://github.com/pyppeteer/pyppeteer) package to execute any
+JavaScript on a retrieved page. The result is then parsed by
+[Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/) to reduce the
+content to the human visible portions of a page.
+
+### JSON ###
+
+JSON content is processed by using the
+[`json` library](https://docs.python.org/3/library/json.html) that is part of
+the Python standard library. It is read in and then output in a deterministic
+manner to adjust for any styling differences between content.
 
 ## Contributing ##
 

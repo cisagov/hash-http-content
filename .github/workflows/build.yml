@@ -64,6 +64,8 @@ jobs:
             ${{ hashFiles('**/requirements.txt') }}"
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
+      - name: Download and extract a serverless-chrome binary
+        run: ./get_serverless_chrome_binary.sh
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
