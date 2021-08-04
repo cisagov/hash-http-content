@@ -32,7 +32,7 @@ from ._version import __version__
 from .hasher import UrlHasher
 
 
-def main():
+def main() -> None:
     """Return the hash(es) and information from the requested URL(s)."""
     args: Dict[str, str] = docopt.docopt(__doc__, version=__version__)
     schema: Schema = Schema(
@@ -52,13 +52,13 @@ def main():
     except SchemaError as err:
         # Exit because one or more of the arguments were invalid
         print(err, file=sys.stderr)
-        return 1
+        sys.exit(1)
 
     if validated_args["--list-algorithms"]:
         print("Algorithms supported for this platform:")
         for algo in sorted(hashlib.algorithms_available):
             print(f"- {algo}")
-        return 0
+        return
 
     if validated_args["--json"]:
         results = []
@@ -103,5 +103,3 @@ def main():
 
     if validated_args["--json"]:
         print(dumps(results, separators=(",", ":"), sort_keys=True))
-
-    return 0
