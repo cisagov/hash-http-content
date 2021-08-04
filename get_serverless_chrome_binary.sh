@@ -19,7 +19,6 @@ DOWNLOAD_URL="https://github.com/adieuadieu/serverless-chrome/releases/download/
 LOCAL_FILE="serverless-chrome.zip"
 LOCAL_DIR="tests/files/"
 
-
 # Get the URL of the latest stable release available
 function get_latest_stable_url {
   releases_url="https://api.github.com/repos/adieuadieu/serverless-chrome/releases"
@@ -29,13 +28,12 @@ function get_latest_stable_url {
   DOWNLOAD_URL=$(curl -s "$latest_assets" | jq -r '.[] | select(.browser_download_url | contains("stable")) | .browser_download_url')
 }
 
-while (( "$#" ))
-do
+while (("$#")); do
   case "$1" in
-    -h|--help)
+    -h | --help)
       usage 0
       ;;
-    -l|--latest)
+    -l | --latest)
       get_latest_stable_url
       shift 1
       ;;
