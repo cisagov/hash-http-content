@@ -17,8 +17,8 @@ encoding before proceeding.
 Additional content processing is currently implemented for the following types
 of content:
 
-* HTML
-* JSON
+- HTML
+- JSON
 
 ### HTML ###
 
