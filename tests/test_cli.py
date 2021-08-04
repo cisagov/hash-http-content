@@ -62,20 +62,25 @@ def test_list_algorithms(capsys):
     expected_output = "Algorithms supported for this platform:\n" + "\n".join(
         f"- {a}" for a in sorted(hashlib.algorithms_available)
     )
+    return_code = None
     with patch.object(sys, "argv", ["bogus", "--list-algorithms"]):
         return_code = cli.main()
     captured = capsys.readouterr()
-    assert return_code == 0
+    assert return_code is None
     assert captured.out.rstrip() == expected_output
 
 
 def test_invalid_hash_type(capsys):
     """Validate that an unsupported hash type causes an error."""
     expected_output = f"Invalid algorithm provided. Must be one of: {sorted(hashlib.algorithms_available)}"
-    with patch.object(
-        sys, "argv", ["bogus", "--hash-algorithm", "nonsensical", "localhost"]
-    ):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(
+            sys, "argv", ["bogus", "--hash-algorithm", "nonsensical", "localhost"]
+        ):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
     captured = capsys.readouterr()
     assert return_code == 1
     assert captured.err.rstrip() == expected_output
@@ -92,11 +97,15 @@ def test_full_run_no_http_schema(capsys):
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
         ]
     )
-    with patch.object(sys, "argv", ["bogus", "example.com"]):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(sys, "argv", ["bogus", "example.com"]):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
     captured = capsys.readouterr()
 
-    assert return_code == 0
+    assert return_code is None
     assert captured.out.rstrip() == expected_output
 
 
@@ -111,11 +120,16 @@ def test_full_run_with_http_schema(capsys):
             "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
         ]
     )
-    with patch.object(sys, "argv", ["bogus", "https://example.com"]):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(sys, "argv", ["bogus", "https://example.com"]):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
 
-    assert return_code == 0
+    assert return_code is None
     assert captured.out.rstrip() == expected_output
 
 
@@ -128,12 +142,19 @@ def test_full_run_no_redirect(capsys):
         "  Content type - 'text/html'",
         "  Redirect - False",
     ]
-    with patch.object(sys, "argv", ["bogus", "--show-redirect", "http://example.com"]):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(
+            sys, "argv", ["bogus", "--show-redirect", "http://example.com"]
+        ):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
     captured_lines = captured.out.split("\n")
 
-    assert return_code == 0
+    assert return_code is None
 
     for i, value in enumerate(expected_output):
         assert captured_lines[i] == value
@@ -148,14 +169,21 @@ def test_full_run_with_redirect(capsys):
         "  Content type - 'text/plain'",
         "  Redirect - True",
     ]
-    with patch.object(
-        sys, "argv", ["bogus", "--show-redirect", "http://rules.ncats.cyber.dhs.gov"]
-    ):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(
+            sys,
+            "argv",
+            ["bogus", "--show-redirect", "http://rules.ncats.cyber.dhs.gov"],
+        ):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
     captured_lines = captured.out.split("\n")
 
-    assert return_code == 0
+    assert return_code is None
 
     for i, value in enumerate(expected_output):
         assert captured_lines[i] == value
@@ -175,11 +203,18 @@ def test_full_run_with_content(capsys):
             r"b'Example Domain Example Domain This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission. More information...'",
         ]
     )
-    with patch.object(sys, "argv", ["bogus", "--show-content", "https://example.com"]):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(
+            sys, "argv", ["bogus", "--show-content", "https://example.com"]
+        ):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
 
-    assert return_code == 0
+    assert return_code is None
     assert captured.out.rstrip() == expected_output
 
 
@@ -198,15 +233,20 @@ def test_full_run_check_redirect_with_content(capsys):
             r"b'Example Domain Example Domain This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission. More information...'",
         ]
     )
-    with patch.object(
-        sys,
-        "argv",
-        ["bogus", "--show-content", "--show-redirect", "https://example.com"],
-    ):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(
+            sys,
+            "argv",
+            ["bogus", "--show-content", "--show-redirect", "https://example.com"],
+        ):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
 
-    assert return_code == 0
+    assert return_code is None
     assert captured.out.rstrip() == expected_output
 
 
@@ -222,11 +262,16 @@ def test_full_run_json_output(capsys):
             "status_code": 200,
         }
     ]
-    with patch.object(sys, "argv", ["bogus", "--json", "https://example.com"]):
-        return_code = cli.main()
+    return_code = None
+    try:
+        with patch.object(sys, "argv", ["bogus", "--json", "https://example.com"]):
+            return_code = cli.main()
+    except SystemExit as sys_exit:
+        return_code = sys_exit.code
+
     captured = capsys.readouterr()
 
     captured_result = json.loads(captured.out)
 
-    assert return_code == 0
+    assert return_code is None
     assert captured_result == expected_result
