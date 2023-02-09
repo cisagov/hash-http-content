@@ -2,3 +2,7 @@
 ipython
 mypy
 semver
+types-beautifulsoup4
+types-docopt
+types-requests
+types-setuptools

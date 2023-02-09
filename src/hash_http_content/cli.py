@@ -26,7 +26,9 @@ from urllib.parse import urlparse
 
 # Third-Party Libraries
 import docopt
-from schema import And, Schema, SchemaError, Use
+
+# No readily available stubs/typing package appears to exist.
+from schema import And, Schema, SchemaError, Use  # type: ignore
 
 from ._version import __version__
 from .hasher import UrlHasher

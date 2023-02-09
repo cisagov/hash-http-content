@@ -11,10 +11,12 @@ from typing import Any, Callable, Dict, NamedTuple, Union
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.errors import TimeoutError
-from pyppeteer.page import Page
+
+# No readily available stubs/typing package appears to exist.
+from pyppeteer import launch  # type: ignore
+from pyppeteer.browser import Browser  # type: ignore
+from pyppeteer.errors import TimeoutError  # type: ignore
+from pyppeteer.page import Page  # type: ignore
 import requests
 from requests.exceptions import ConnectionError, Timeout
 

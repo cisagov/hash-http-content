@@ -116,7 +116,10 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
+          - types-beautifulsoup4
+          - types-docopt
           - types-requests
+          - types-setuptools
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.3.1
     hooks:
