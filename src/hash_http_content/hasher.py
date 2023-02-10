@@ -140,7 +140,7 @@ class UrlHasher:
         if isinstance(element, Comment):
             logging.debug("Skipping Comment tag")
             return False
-        if element.parent.name in discard_tags:
+        if element.parent is not None and element.parent.name in discard_tags:
             logging.debug("Skipping element in parent tag '%s'", element.parent.name)
             return False
         return True
