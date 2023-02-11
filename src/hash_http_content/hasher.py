@@ -32,18 +32,7 @@ def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
     except AttributeError:
         # There is no named constructor for the desired hashing algorithm
         try:
-            # mypy relies on typeshed (https://github.com/python/typeshed) for
-            # stdlib type hinting, but it does not have the correct type hints for
-            # hashlib.new(). The PR I submitted to fix them
-            # (https://github.com/python/typeshed/pull/4973) was approved, but I
-            # am not sure if mypy will still have issues with the usage of this
-            # keyword in non Python 3.9 (when the usedforsecurity kwarg was added)
-            # environments. I believe the earliest I can test this will be in mypy
-            # v0.900, and I have made
-            # https://github.com/cisagov/hash-http-content/issues/3 to document
-            # the status of this workaround.
-            # hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
-            hasher = getattr(hashlib, "new")(hash_algorithm, usedforsecurity=False)
+            hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
         except TypeError:
             hasher = hashlib.new(hash_algorithm)
     except TypeError:
