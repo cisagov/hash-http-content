@@ -11,10 +11,12 @@ from typing import Any, Callable, Dict, NamedTuple, Union
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.errors import TimeoutError
-from pyppeteer.page import Page
+
+# No readily available stubs/typing package appears to exist.
+from pyppeteer import launch  # type: ignore
+from pyppeteer.browser import Browser  # type: ignore
+from pyppeteer.errors import TimeoutError  # type: ignore
+from pyppeteer.page import Page  # type: ignore
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
@@ -30,18 +32,7 @@ def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
     except AttributeError:
         # There is no named constructor for the desired hashing algorithm
         try:
-            # mypy relies on typeshed (https://github.com/python/typeshed) for
-            # stdlib type hinting, but it does not have the correct type hints for
-            # hashlib.new(). The PR I submitted to fix them
-            # (https://github.com/python/typeshed/pull/4973) was approved, but I
-            # am not sure if mypy will still have issues with the usage of this
-            # keyword in non Python 3.9 (when the usedforsecurity kwarg was added)
-            # environments. I believe the earliest I can test this will be in mypy
-            # v0.900, and I have made
-            # https://github.com/cisagov/hash-http-content/issues/3 to document
-            # the status of this workaround.
-            # hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
-            hasher = getattr(hashlib, "new")(hash_algorithm, usedforsecurity=False)
+            hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
         except TypeError:
             hasher = hashlib.new(hash_algorithm)
     except TypeError:
@@ -138,7 +129,7 @@ class UrlHasher:
         if isinstance(element, Comment):
             logging.debug("Skipping Comment tag")
             return False
-        if element.parent.name in discard_tags:
+        if element.parent is not None and element.parent.name in discard_tags:
             logging.debug("Skipping element in parent tag '%s'", element.parent.name)
             return False
         return True
