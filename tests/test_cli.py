@@ -163,8 +163,8 @@ def test_full_run_no_redirect(capsys):
 def test_full_run_with_redirect(capsys):
     """Validate output for a given URL that has a redirect."""
     expected_output = [
-        "Results for http://rules.ncats.cyber.dhs.gov:",
-        "  Retrieved URL - 'https://rules.ncats.cyber.dhs.gov/'",
+        "Results for http://rules.vm.cyber.dhs.gov:",
+        "  Retrieved URL - 'https://rules.vm.cyber.dhs.gov/'",
         "  Status code - '200'",
         "  Content type - 'text/plain'",
         "  Redirect - True",
@@ -174,7 +174,7 @@ def test_full_run_with_redirect(capsys):
         with patch.object(
             sys,
             "argv",
-            ["bogus", "--show-redirect", "http://rules.ncats.cyber.dhs.gov"],
+            ["bogus", "--show-redirect", "http://rules.vm.cyber.dhs.gov"],
         ):
             return_code = cli.main()
     except SystemExit as sys_exit:

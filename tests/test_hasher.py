@@ -242,7 +242,7 @@ def test_hash_url_html_status_404():
 
 def test_hash_url_with_redirect():
     """Test against a URL that redirects and has no content-type parameters."""
-    test_url = "http://rules.ncats.cyber.dhs.gov"
+    test_url = "http://rules.vm.cyber.dhs.gov"
 
     hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
     result = hasher.hash_url(test_url)
