@@ -1,0 +1,53 @@
+---
+name: sync-labels
+
+on:
+  push:
+    paths:
+      - '.github/labels.yml'
+      - '.github/workflows/sync-labels.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    name: Run diagnostics
+    runs-on: ubuntu-latest
+    steps:
+      # Note that a duplicate of this step must be added at the top of
+      # each job.
+      - id: harden-runner
+        name: Harden the runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+      - id: github-status
+        name: Check GitHub status
+        uses: crazy-max/ghaction-github-status@v3
+      - id: dump-context
+        name: Dump context
+        uses: crazy-max/ghaction-dump-context@v2
+  labeler:
+    needs:
+      - diagnostics
+    permissions:
+      # actions/checkout needs this to fetch code
+      contents: read
+      # crazy-max/ghaction-github-labeler needs this to manage repository labels
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - id: harden-runner
+        name: Harden the runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v4
+      - name: Sync repository labels
+        if: success()
+        uses: crazy-max/ghaction-github-labeler@v5
+        with:
+          # This is a hideous ternary equivalent so we only do a dry run unless
+          # this workflow is triggered by the develop branch.
+          dry-run: ${{ github.ref_name == 'develop' && 'false' || 'true' }}
