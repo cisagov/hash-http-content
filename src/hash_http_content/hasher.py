@@ -40,8 +40,8 @@ def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
             # v0.900, and I have made
             # https://github.com/cisagov/hash-http-content/issues/3 to document
             # the status of this workaround.
-            # hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
-            hasher = getattr(hashlib, "new")(hash_algorithm, usedforsecurity=False)
+            hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
+            # hasher = getattr(hashlib, "new")(hash_algorithm, usedforsecurity=False)
         except TypeError:
             hasher = hashlib.new(hash_algorithm)
     except TypeError:
