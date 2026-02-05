@@ -93,7 +93,7 @@ def test_full_run_no_http_schema(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
+            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
         ]
     )
     return_code = None
@@ -116,7 +116,7 @@ def test_full_run_with_http_schema(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
+            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
         ]
     )
     return_code = None
@@ -196,10 +196,10 @@ def test_full_run_with_content(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
+            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
             "",
             "Contents:",
-            r"b'Example Domain Example Domain This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission. More information...'",
+            r"b'Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more'",
         ]
     )
     return_code = None
@@ -226,10 +226,10 @@ def test_full_run_check_redirect_with_content(capsys):
             "  Status code - '200'",
             "  Content type - 'text/html'",
             "  Redirect - False",
-            "  Hash (sha256) of contents - 6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
+            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
             "",
             "Contents:",
-            r"b'Example Domain Example Domain This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission. More information...'",
+            r"b'Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more'",
         ]
     )
     return_code = None
@@ -254,7 +254,7 @@ def test_full_run_json_output(capsys):
     expected_result = [
         {
             "content_type": "text/html",
-            "contents_hash": "6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2",
+            "contents_hash": "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
             "is_redirected": False,
             "requested_url": "https://example.com",
             "retrieved_url": "https://example.com/",

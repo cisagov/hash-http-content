@@ -216,7 +216,7 @@ def test_handle_html_dynmamic_with_encoding():
 def test_hash_url_html_status_200():
     """Test againt a URL that returns HTML content from an existing location."""
     test_url = "https://example.com"
-    expected_digest = "6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2"
+    expected_digest = "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8"
 
     hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
     result = hasher.hash_url(test_url)
@@ -229,7 +229,7 @@ def test_hash_url_html_status_200():
 def test_hash_url_html_status_404():
     """Test against a URL that returns HTML content from a missing location."""
     test_url = "https://example.com/404"
-    expected_digest = "6fba1a7167467b6dd3da090b5ec437c1b811dd2c2133504a448fb7ca59d390c2"
+    expected_digest = "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8"
 
     hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
     result = hasher.hash_url(test_url)
