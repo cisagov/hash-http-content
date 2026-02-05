@@ -2,11 +2,12 @@
 
 # Standard Python Libraries
 import asyncio
+from collections.abc import Callable
 import hashlib
 import json
 import logging
 import tempfile
-from typing import Any, Callable, Dict, NamedTuple, Union
+from typing import Any, NamedTuple
 
 # Third-Party Libraries
 from bs4 import BeautifulSoup
@@ -86,7 +87,7 @@ class UrlHasher:
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: Dict[str, Any] = {},
+        browser_options: dict[str, Any] = {},
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
@@ -101,7 +102,7 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        self.__browser_options: Dict[str, Any] = {
+        self.__browser_options: dict[str, Any] = {
             **default_browser_options,
             **browser_options,
         }
@@ -115,7 +116,7 @@ class UrlHasher:
         logging.debug("Using default encoding '%s'", self._default_encoding)
         logging.debug("Using hashing algorithm '%s'", self._hash_algorithm)
 
-        self._handlers: Dict[str, Callable] = {
+        self._handlers: dict[str, Callable] = {
             "application/json": self._handle_json,
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
@@ -235,7 +236,7 @@ class UrlHasher:
 
         return HandlerResult(digest, visible_bytes)
 
-    def hash_url(self, url: str, verify: Union[bool, str] = True) -> UrlResult:
+    def hash_url(self, url: str, verify: bool | str = True) -> UrlResult:
         """Get a hash of the contents of the provided URL."""
         logging.debug("Hashing provided URL '%s'", url)
 

@@ -21,7 +21,7 @@ Options:
 import hashlib
 from json import dumps
 import sys
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlparse
 
 # Third-Party Libraries
@@ -34,7 +34,7 @@ from .hasher import UrlHasher
 
 def main() -> None:
     """Return the hash(es) and information from the requested URL(s)."""
-    args: Dict[str, str] = docopt.docopt(__doc__, version=__version__)
+    args: dict[str, str] = docopt.docopt(__doc__, version=__version__)
     schema: Schema = Schema(
         {
             "--hash-algorithm": And(
@@ -48,7 +48,7 @@ def main() -> None:
     )
 
     try:
-        validated_args: Dict[str, Any] = schema.validate(args)
+        validated_args: dict[str, Any] = schema.validate(args)
     except SchemaError as err:
         # Exit because one or more of the arguments were invalid
         print(err, file=sys.stderr)
