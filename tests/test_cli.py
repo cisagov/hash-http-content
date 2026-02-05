@@ -1,4 +1,3 @@
-#!/usr/bin/env pytest -vs
 """Tests for hash_http_content command line interface."""
 
 # Standard Python Libraries

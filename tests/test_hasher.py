@@ -1,4 +1,3 @@
-#!/usr/bin/env pytest -vs
 """Tests for hash_http_content URL hashing functionality."""
 
 # Standard Python Libraries
