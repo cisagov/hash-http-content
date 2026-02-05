@@ -100,7 +100,7 @@ jobs:
           permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
       - id: setup-env
         uses: cisagov/setup-env-github-action@v1
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - id: setup-python
         uses: actions/setup-python@v6
         with:
@@ -219,7 +219,6 @@ jobs:
           - ubuntu-latest
           - windows-latest
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -252,7 +251,7 @@ jobs:
           # monitoring configuration *does not* require you to modify
           # this workflow.
           permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - id: setup-python
         uses: actions/setup-python@v6
         with:
@@ -327,7 +326,7 @@ jobs:
           # monitoring configuration *does not* require you to modify
           # this workflow.
           permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Finished coveralls reports
         uses: coverallsapp/github-action@v2
         with:
@@ -349,7 +348,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -382,7 +380,7 @@ jobs:
           # monitoring configuration *does not* require you to modify
           # this workflow.
           permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - id: setup-python
         uses: actions/setup-python@v6
         with:
@@ -408,7 +406,7 @@ jobs:
       - name: Build artifacts
         run: python -m build
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dist-${{ matrix.python-version }}
           path: dist
@@ -435,7 +433,6 @@ jobs:
           - ubuntu-latest
           - windows-latest
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -468,7 +465,7 @@ jobs:
           # monitoring configuration *does not* require you to modify
           # this workflow.
           permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - id: setup-python
         uses: actions/setup-python@v6
         with:
@@ -489,7 +486,7 @@ jobs:
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
       - name: Retrieve the built wheel
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: dist-${{ matrix.python-version }}
           path: dist

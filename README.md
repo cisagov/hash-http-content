@@ -1,8 +1,10 @@
 # hash-http-content #
 
 [![GitHub Build Status](https://github.com/cisagov/hash-http-content/workflows/build/badge.svg)](https://github.com/cisagov/hash-http-content/actions)
+[![License](https://img.shields.io/github/license/cisagov/hash-http-content)](https://spdx.org/licenses/)
 [![CodeQL](https://github.com/cisagov/hash-http-content/workflows/CodeQL/badge.svg)](https://github.com/cisagov/hash-http-content/actions/workflows/codeql-analysis.yml)
 [![Coverage Status](https://coveralls.io/repos/github/cisagov/hash-http-content/badge.svg?branch=develop)](https://coveralls.io/github/cisagov/hash-http-content?branch=develop)
+[![Code Style](https://img.shields.io/badge/Code%20Style-black-black)](https://github.com/psf/black)
 
 This is a Python library to retrieve the contents of a given URL via HTTP (or
 HTTPS) and hash the processed contents.
