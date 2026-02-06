@@ -122,14 +122,17 @@ class UrlHasher:
             "text/plain": self._handle_plaintext,
         }
 
+        logging.debug("Starting event loop")
+        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
+
     def __init_browser(self):
         """Initialize the pyppeteer Browser if it does not exist."""
         if not self._browser:
             logging.debug("Initializing Browser object")
-            self._browser = asyncio.get_event_loop().run_until_complete(
+            self._browser = self._event_loop.run_until_complete(
                 launch(**self.__browser_options)
             )
-            self._browser_page = asyncio.get_event_loop().run_until_complete(
+            self._browser_page = self._event_loop.run_until_complete(
                 self._browser.newPage()
             )
 
@@ -199,7 +202,7 @@ class UrlHasher:
 
             try:
                 # Wait for everything to load after navigating to the temporary file
-                asyncio.get_event_loop().run_until_complete(
+                self._event_loop.run_until_complete(
                     self._browser_page.goto(
                         f"file://{fp.name}",
                         {
@@ -214,7 +217,7 @@ class UrlHasher:
             # configured timeout
             except TimeoutError:
                 pass
-            page_contents: str = asyncio.get_event_loop().run_until_complete(
+            page_contents: str = self._event_loop.run_until_complete(
                 self._browser_page.content()
             )
 
