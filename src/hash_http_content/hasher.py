@@ -125,6 +125,15 @@ class UrlHasher:
         logging.debug("Starting event loop")
         self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
 
+    def __del__(self):
+        """Clean up resources used by this instance."""
+        logging.debug("Cleaning up UrlHasher object")
+        if self._browser is not None:
+            logging.debug("Closing browser")
+            self._event_loop.run_until_complete(self._browser.close())
+        logging.debug("Closing event loop")
+        self._event_loop.close()
+
     def __init_browser(self):
         """Initialize the pyppeteer Browser if it does not exist."""
         if not self._browser:
