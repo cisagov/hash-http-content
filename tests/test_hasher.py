@@ -214,7 +214,7 @@ def test_handle_html_dynmamic_with_encoding():
 
 
 def test_hash_url_html_status_200():
-    """Test againt a URL that returns HTML content from an existing location."""
+    """Test against a URL that returns HTML content from an existing location."""
     test_url = "https://example.com"
     expected_digest = "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8"
 
