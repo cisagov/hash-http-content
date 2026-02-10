@@ -172,6 +172,7 @@ repos:
         # the dev section of pyproject.toml to avoid discrepancies in
         # type checking between environments.
         additional_dependencies:
+          - playwright
           - types-docopt
           - types-requests
   - repo: https://github.com/pypa/pip-audit

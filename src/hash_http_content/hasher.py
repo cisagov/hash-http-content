@@ -1,21 +1,17 @@
 """Functionality to get a hash of an HTTP URL's visible content."""
 
 # Standard Python Libraries
-import asyncio
 from collections.abc import Callable
 import hashlib
 import json
 import logging
 import tempfile
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.errors import TimeoutError
-from pyppeteer.page import Page
+from playwright.sync_api import Browser, Page, Playwright, sync_playwright
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
@@ -83,16 +79,16 @@ class UrlResult(NamedTuple):
 class UrlHasher:
     """Provide functionality to get the hash digest of a given URL."""
 
+    # Setup Playwright interface
+    __playwright: Playwright = sync_playwright().start()
+
     def __init__(
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: dict[str, Any] = {},
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
-        default_browser_options = {"headless": True}
-        logging.debug("Default browser options: %s", default_browser_options)
 
         # Number of retries
         self._retries: int = 3
@@ -102,14 +98,14 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        self.__browser_options: dict[str, Any] = {
-            **default_browser_options,
-            **browser_options,
-        }
-        logging.debug("Using browser options: %s", self.__browser_options)
+        # Initialize the Playwright browser and page
+        self._browser: Browser = self.__playwright.chromium.launch()
+        self._browser_page: Page = self._browser.new_page()
 
-        self._browser: Browser = None
-        self._browser_page: Page = None
+        # Set the default timeout for all Page actions to the value of self_timeout
+        # (in milliseconds)
+        self._browser_page.set_default_navigation_timeout(self._timeout * 1000)
+
         self._default_encoding: str = encoding
         self._hash_algorithm: str = hash_algorithm
 
@@ -122,28 +118,15 @@ class UrlHasher:
             "text/plain": self._handle_plaintext,
         }
 
-        logging.debug("Starting event loop")
-        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-
     def __del__(self):
         """Clean up resources used by this instance."""
         logging.debug("Cleaning up UrlHasher object")
+        if self._browser_page is not None:
+            logging.debug("Closing browser page")
+            self._browser_page.close()
         if self._browser is not None:
             logging.debug("Closing browser")
-            self._event_loop.run_until_complete(self._browser.close())
-        logging.debug("Closing event loop")
-        self._event_loop.close()
-
-    def __init_browser(self):
-        """Initialize the pyppeteer Browser if it does not exist."""
-        if not self._browser:
-            logging.debug("Initializing Browser object")
-            self._browser = self._event_loop.run_until_complete(
-                launch(**self.__browser_options)
-            )
-            self._browser_page = self._event_loop.run_until_complete(
-                self._browser.newPage()
-            )
+            self._browser.close()
 
     def _is_visible_element(self, element: PageElement) -> bool:
         """Return True if the given website element would be visible."""
@@ -193,7 +176,6 @@ class UrlHasher:
     def _handle_html(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle an HTML page."""
         logging.debug("Handling content as HTML")
-        self.__init_browser()
 
         # Until the Page.setContent() method allows options, writing the HTML
         # document to a temporary file and navigating to it with Page.goto() is
@@ -209,26 +191,14 @@ class UrlHasher:
 
             logging.debug("Navigating to temporary file '%s'", fp.name)
 
-            try:
-                # Wait for everything to load after navigating to the temporary file
-                self._event_loop.run_until_complete(
-                    self._browser_page.goto(
-                        f"file://{fp.name}",
-                        {
-                            # Wait for load and networkidle2 events up to the
-                            # value of self_timeout (in milliseconds)
-                            "timeout": self._timeout * 1000,
-                            "waitUntil": ["load", "networkidle2"],
-                        },
-                    )
-                )
-            # Waiting for load and networkidle2 events to occur exceeded the
-            # configured timeout
-            except TimeoutError:
-                pass
-            page_contents: str = self._event_loop.run_until_complete(
-                self._browser_page.content()
+            self._browser_page.goto(
+                f"file://{fp.name}",
+                # Use networkidle as a determination that the page has finished
+                # loading content
+                wait_until="networkidle",
             )
+
+            page_contents: str = self._browser_page.content()
 
         # Try to guarantee our preferred encoding
         page_contents = bytes(page_contents.encode(self._default_encoding)).decode(

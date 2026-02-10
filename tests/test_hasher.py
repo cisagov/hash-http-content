@@ -3,7 +3,6 @@
 # Standard Python Libraries
 import hashlib
 import json
-import os.path
 
 # Third-Party Libraries
 from bs4 import Comment, Tag
@@ -47,15 +46,6 @@ def test_hash_hash_digest():
     expected_digest = "d5f8f30f25636b1f3efc2f52a0a8724c9ffa280875a1fc9a92cfe3f644b7d5c3"
     digest = hash_http_content.hasher.get_hash_digest(HASH_ALGORITHM, b"cisagov")
     assert digest == expected_digest
-
-
-def test_init_browser():
-    """Ensure that a browser object is initialized."""
-    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
-    assert hasher._browser is None
-    # Call through name mangling
-    hasher._UrlHasher__init_browser()
-    assert hasher._browser is not None
 
 
 @pytest.mark.parametrize(
@@ -248,63 +238,3 @@ def test_hash_url_with_redirect():
 
     assert result.status == 200
     assert result.is_redirect is True
-
-
-def test_browser_additional_options():
-    """Verify that additional options are used in invoking the browser."""
-    # These options are expected for an AWS Lambda style environment
-    options = {
-        "headless": True,
-        "args": [
-            "--no-sandbox",
-            "--single-process",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--no-zygote",
-        ],
-        "executablePath": "tests/files/serverless-chrome",
-    }
-    with open(TEST_VALUE_SOURCES["plaintext"]) as f:
-        test_value = f.read()
-    test_bytes = bytes(test_value, ALT_ENCODING)
-    expected_bytes = bytes(test_value, "utf-8")
-
-    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM, browser_options=options)
-    result = hasher._handle_plaintext(test_bytes, ALT_ENCODING)
-
-    assert hasher._UrlHasher__browser_options == options
-    assert result.hash == EXPECTED_DIGESTS["plaintext"]
-    assert result.contents == expected_bytes
-
-
-def test_browser_with_specified_executable():
-    """Test running with the executablePath option."""
-    serverless_chrome_path = "tests/files/headless-chromium"
-    # If this file does not exist, do not perform this test.
-    if not os.path.isfile(serverless_chrome_path):
-        pytest.skip("no serverless-chrome binary found")
-
-    # These options are expected for an AWS Lambda style environment
-    options = {
-        "headless": True,
-        "args": [
-            "--no-sandbox",
-            "--single-process",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--no-zygote",
-        ],
-        "executablePath": serverless_chrome_path,
-    }
-
-    with open(TEST_VALUE_SOURCES["plaintext"]) as f:
-        test_value = f.read()
-    test_bytes = bytes(test_value, ALT_ENCODING)
-    expected_bytes = bytes(test_value, "utf-8")
-
-    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM, browser_options=options)
-    result = hasher._handle_plaintext(test_bytes, ALT_ENCODING)
-
-    assert hasher._UrlHasher__browser_options == options
-    assert result.hash == EXPECTED_DIGESTS["plaintext"]
-    assert result.contents == expected_bytes
