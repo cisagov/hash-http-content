@@ -1,6 +1,4 @@
 """The hash-http-content library."""
-# Standard Python Libraries
-from typing import List
 
 # We disable a Flake8 check for "Module imported but unused (F401)" here because
 # although this import is not directly used, it populates the value
@@ -9,4 +7,4 @@ from typing import List
 from ._version import __version__  # noqa: F401
 from .hasher import UrlHasher, UrlResult
 
-__all__: List[str] = ["UrlHasher", "UrlResult"]
+__all__: list[str] = ["UrlHasher", "UrlResult"]

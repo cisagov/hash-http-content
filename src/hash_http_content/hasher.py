@@ -2,11 +2,12 @@
 
 # Standard Python Libraries
 import asyncio
+from collections.abc import Callable
 import hashlib
 import json
 import logging
 import tempfile
-from typing import Any, Callable, Dict, NamedTuple, Union
+from typing import Any, NamedTuple
 
 # Third-Party Libraries
 from bs4 import BeautifulSoup
@@ -86,7 +87,7 @@ class UrlHasher:
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: Dict[str, Any] = {},
+        browser_options: dict[str, Any] = {},
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
@@ -101,7 +102,7 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        self.__browser_options: Dict[str, Any] = {
+        self.__browser_options: dict[str, Any] = {
             **default_browser_options,
             **browser_options,
         }
@@ -115,20 +116,32 @@ class UrlHasher:
         logging.debug("Using default encoding '%s'", self._default_encoding)
         logging.debug("Using hashing algorithm '%s'", self._hash_algorithm)
 
-        self._handlers: Dict[str, Callable] = {
+        self._handlers: dict[str, Callable] = {
             "application/json": self._handle_json,
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
         }
 
+        logging.debug("Starting event loop")
+        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
+
+    def __del__(self):
+        """Clean up resources used by this instance."""
+        logging.debug("Cleaning up UrlHasher object")
+        if self._browser is not None:
+            logging.debug("Closing browser")
+            self._event_loop.run_until_complete(self._browser.close())
+        logging.debug("Closing event loop")
+        self._event_loop.close()
+
     def __init_browser(self):
         """Initialize the pyppeteer Browser if it does not exist."""
         if not self._browser:
             logging.debug("Initializing Browser object")
-            self._browser = asyncio.get_event_loop().run_until_complete(
+            self._browser = self._event_loop.run_until_complete(
                 launch(**self.__browser_options)
             )
-            self._browser_page = asyncio.get_event_loop().run_until_complete(
+            self._browser_page = self._event_loop.run_until_complete(
                 self._browser.newPage()
             )
 
@@ -198,7 +211,7 @@ class UrlHasher:
 
             try:
                 # Wait for everything to load after navigating to the temporary file
-                asyncio.get_event_loop().run_until_complete(
+                self._event_loop.run_until_complete(
                     self._browser_page.goto(
                         f"file://{fp.name}",
                         {
@@ -213,7 +226,7 @@ class UrlHasher:
             # configured timeout
             except TimeoutError:
                 pass
-            page_contents: str = asyncio.get_event_loop().run_until_complete(
+            page_contents: str = self._event_loop.run_until_complete(
                 self._browser_page.content()
             )
 
@@ -235,7 +248,7 @@ class UrlHasher:
 
         return HandlerResult(digest, visible_bytes)
 
-    def hash_url(self, url: str, verify: Union[bool, str] = True) -> UrlResult:
+    def hash_url(self, url: str, verify: bool | str = True) -> UrlResult:
         """Get a hash of the contents of the provided URL."""
         logging.debug("Hashing provided URL '%s'", url)
 
