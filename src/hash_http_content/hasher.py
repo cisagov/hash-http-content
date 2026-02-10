@@ -1,6 +1,7 @@
 """Functionality to get a hash of an HTTP URL's visible content."""
 
 # Standard Python Libraries
+import atexit
 from collections.abc import Callable
 import hashlib
 import json
@@ -11,7 +12,7 @@ from typing import NamedTuple
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from playwright.sync_api import Browser, Page, sync_playwright
+from playwright.sync_api import Browser, Playwright, sync_playwright
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
@@ -79,6 +80,9 @@ class UrlResult(NamedTuple):
 class UrlHasher:
     """Provide functionality to get the hash digest of a given URL."""
 
+    _playwright: Playwright = sync_playwright().start()
+    _browser: Browser = _playwright.chromium.launch()
+
     def __init__(
         self,
         hash_algorithm: str,
@@ -106,6 +110,13 @@ class UrlHasher:
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
         }
+
+    @classmethod
+    def _cleanup(cls) -> None:
+        """Perform cleanup of any resources used by this class."""
+        logging.debug("Performing cleanup of UrlHasher resources")
+        cls._browser.close()
+        cls._playwright.stop()
 
     def _is_visible_element(self, element: PageElement) -> bool:
         """Return True if the given website element would be visible."""
@@ -156,9 +167,7 @@ class UrlHasher:
         """Handle an HTML page."""
         logging.debug("Handling content as HTML")
 
-        with sync_playwright() as playwright:
-            browser: Browser = playwright.chromium.launch()
-            page: Page = browser.new_page()
+        with UrlHasher._browser.new_page() as page:
             # Set the default timeout for all Page actions to the
             # value of self_timeout (in milliseconds)
             page.set_default_navigation_timeout(self._timeout * 1000)
@@ -185,10 +194,6 @@ class UrlHasher:
                 )
 
                 page_contents: str = page.content()
-
-            # Cleanup
-            page.close()
-            browser.close()
 
         # Try to guarantee our preferred encoding
         page_contents = bytes(page_contents.encode(self._default_encoding)).decode(
@@ -283,3 +288,7 @@ class UrlHasher:
             processed.hash,
             processed.contents,
         )
+
+
+# Register the cleanup method to be called when the program exits
+atexit.register(UrlHasher._cleanup)
