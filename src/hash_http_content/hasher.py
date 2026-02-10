@@ -202,10 +202,10 @@ class UrlHasher:
 
         logging.debug("Parsing rendered page contents")
         soup: BeautifulSoup = BeautifulSoup(page_contents, "lxml")
-        text_elements = soup.find_all(text=True)
-        visible_text_elements = filter(self._is_visible_element, text_elements)
+        string_elements = soup.find_all(string=True)
+        visible_string_elements = filter(self._is_visible_element, string_elements)
         visible_text: str = " ".join(
-            t.strip() for t in visible_text_elements if t.strip()
+            t.strip() for t in visible_string_elements if t.strip()
         )
         visible_bytes: bytes = bytes(visible_text, self._default_encoding)
 
