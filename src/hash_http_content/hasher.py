@@ -11,7 +11,7 @@ from typing import NamedTuple
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from playwright.sync_api import Browser, Page, Playwright, sync_playwright
+from playwright.sync_api import Browser, Page, sync_playwright
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
@@ -79,9 +79,6 @@ class UrlResult(NamedTuple):
 class UrlHasher:
     """Provide functionality to get the hash digest of a given URL."""
 
-    # Setup Playwright interface
-    __playwright: Playwright = sync_playwright().start()
-
     def __init__(
         self,
         hash_algorithm: str,
@@ -98,14 +95,6 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        # Initialize the Playwright browser and page
-        self._browser: Browser = self.__playwright.chromium.launch()
-        self._browser_page: Page = self._browser.new_page()
-
-        # Set the default timeout for all Page actions to the value of self_timeout
-        # (in milliseconds)
-        self._browser_page.set_default_navigation_timeout(self._timeout * 1000)
-
         self._default_encoding: str = encoding
         self._hash_algorithm: str = hash_algorithm
 
@@ -117,16 +106,6 @@ class UrlHasher:
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
         }
-
-    def __del__(self):
-        """Clean up resources used by this instance."""
-        logging.debug("Cleaning up UrlHasher object")
-        if self._browser_page is not None:
-            logging.debug("Closing browser page")
-            self._browser_page.close()
-        if self._browser is not None:
-            logging.debug("Closing browser")
-            self._browser.close()
 
     def _is_visible_element(self, element: PageElement) -> bool:
         """Return True if the given website element would be visible."""
@@ -177,28 +156,39 @@ class UrlHasher:
         """Handle an HTML page."""
         logging.debug("Handling content as HTML")
 
-        # Until the Page.setContent() method allows options, writing the HTML
-        # document to a temporary file and navigating to it with Page.goto() is
-        # the only way to leverage the `waitUntil` option to give time for the
-        # page's contents to load. Support for options in Page.setContent() is
-        # expected in pyppeteer when the puppeteer v2.1.1 feature parity rewrite
-        # is completed per:
-        # https://github.com/pyppeteer/pyppeteer/issues/134 for more information
-        with tempfile.NamedTemporaryFile(suffix=".html") as fp:
-            # Output to a temporary file so it's available to the browser
-            fp.write(contents)
-            fp.flush()
+        with sync_playwright() as playwright:
+            browser: Browser = playwright.chromium.launch()
+            page: Page = browser.new_page()
+            # Set the default timeout for all Page actions to the
+            # value of self_timeout (in milliseconds)
+            page.set_default_navigation_timeout(self._timeout * 1000)
 
-            logging.debug("Navigating to temporary file '%s'", fp.name)
+            # Until the Page.setContent() method allows options, writing the HTML
+            # document to a temporary file and navigating to it with Page.goto() is
+            # the only way to leverage the `waitUntil` option to give time for the
+            # page's contents to load. Support for options in Page.setContent() is
+            # expected in pyppeteer when the puppeteer v2.1.1 feature parity rewrite
+            # is completed per:
+            # https://github.com/pyppeteer/pyppeteer/issues/134 for more information
+            with tempfile.NamedTemporaryFile(suffix=".html") as fp:
+                # Output to a temporary file so it's available to the browser
+                fp.write(contents)
+                fp.flush()
 
-            self._browser_page.goto(
-                f"file://{fp.name}",
-                # Use networkidle as a determination that the page has finished
-                # loading content
-                wait_until="networkidle",
-            )
+                logging.debug("Navigating to temporary file '%s'", fp.name)
 
-            page_contents: str = self._browser_page.content()
+                page.goto(
+                    f"file://{fp.name}",
+                    # Use networkidle as a determination that the page has finished
+                    # loading content
+                    wait_until="networkidle",
+                )
+
+                page_contents: str = page.content()
+
+            # Cleanup
+            page.close()
+            browser.close()
 
         # Try to guarantee our preferred encoding
         page_contents = bytes(page_contents.encode(self._default_encoding)).decode(
