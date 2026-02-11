@@ -9,6 +9,12 @@
 This is a Python library to retrieve the contents of a given URL via HTTP (or
 HTTPS) and hash the processed contents.
 
+> [!NOTE]
+> This project uses the Playwright Python API for functionality. The Playwright Python
+> package is automatically installed as a dependency, but you must install the Playwright
+> Chromium browser for the package to work correctly. This can be done with
+> `python -m playwright install chromium --with-deps`.
+
 ## Content processing ##
 
 If an encoding is detected, this package will convert content into the UTF-8
