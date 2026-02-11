@@ -1,21 +1,18 @@
 """Functionality to get a hash of an HTTP URL's visible content."""
 
 # Standard Python Libraries
-import asyncio
+import atexit
 from collections.abc import Callable
 import hashlib
 import json
 import logging
 import tempfile
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 # Third-Party Libraries
 from bs4 import BeautifulSoup
 from bs4.element import Comment, PageElement
-from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.errors import TimeoutError
-from pyppeteer.page import Page
+from playwright.sync_api import Browser, Playwright, sync_playwright
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
@@ -83,16 +80,64 @@ class UrlResult(NamedTuple):
 class UrlHasher:
     """Provide functionality to get the hash digest of a given URL."""
 
+    _playwright: Playwright | None = None
+    _browser: Browser | None = None
+
+    @classmethod
+    def _start_playwright(cls) -> None:
+        """Start a Playwright session if one is not already active."""
+        if cls._playwright is None:
+            logging.debug("Starting Playwright session")
+            cls._playwright = sync_playwright().start()
+
+    @classmethod
+    def _start_browser(cls) -> None:
+        """Start a browser context if one is not already active."""
+        if cls._browser is None:
+            # Ensure that a Playwright session is active before launching a browser
+            cls._start_playwright()
+
+            logging.debug("Launching browser")
+            # We verify that _playwright is not None above so we can safely ignore the
+            # following mypy error:
+            # Item "None" of "Playwright | None" has no attribute "chromium"  [union-attr]
+            cls._browser = cls._playwright.chromium.launch()  # type: ignore[union-attr]
+
+    @classmethod
+    def _cleanup(cls) -> None:
+        """Perform cleanup of any resources used by this class."""
+        logging.debug("Performing cleanup of UrlHasher resources")
+        try:
+            if cls._browser is not None:
+                logging.debug("Closing browser object")
+                cls._browser.close()
+                cls._browser = None
+        except Exception as err:
+            logging.warning(
+                "Encountered a(n) %s exception while attempting to close the browser object: %s",
+                type(err).__name__,
+                err,
+            )
+
+        try:
+            if cls._playwright is not None:
+                logging.debug("Stopping Playwright")
+                cls._playwright.stop()
+                cls._playwright = None
+        except Exception as err:
+            logging.warning(
+                "Encountered a(n) %s exception while attempting to stop Playwright: %s",
+                type(err).__name__,
+                err,
+            )
+
     def __init__(
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: dict[str, Any] = {},
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
-        default_browser_options = {"headless": True}
-        logging.debug("Default browser options: %s", default_browser_options)
 
         # Number of retries
         self._retries: int = 3
@@ -102,14 +147,6 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
-        self.__browser_options: dict[str, Any] = {
-            **default_browser_options,
-            **browser_options,
-        }
-        logging.debug("Using browser options: %s", self.__browser_options)
-
-        self._browser: Browser = None
-        self._browser_page: Page = None
         self._default_encoding: str = encoding
         self._hash_algorithm: str = hash_algorithm
 
@@ -121,29 +158,6 @@ class UrlHasher:
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
         }
-
-        logging.debug("Starting event loop")
-        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-
-    def __del__(self):
-        """Clean up resources used by this instance."""
-        logging.debug("Cleaning up UrlHasher object")
-        if self._browser is not None:
-            logging.debug("Closing browser")
-            self._event_loop.run_until_complete(self._browser.close())
-        logging.debug("Closing event loop")
-        self._event_loop.close()
-
-    def __init_browser(self):
-        """Initialize the pyppeteer Browser if it does not exist."""
-        if not self._browser:
-            logging.debug("Initializing Browser object")
-            self._browser = self._event_loop.run_until_complete(
-                launch(**self.__browser_options)
-            )
-            self._browser_page = self._event_loop.run_until_complete(
-                self._browser.newPage()
-            )
 
     def _is_visible_element(self, element: PageElement) -> bool:
         """Return True if the given website element would be visible."""
@@ -193,42 +207,39 @@ class UrlHasher:
     def _handle_html(self, contents: bytes, encoding: str) -> HandlerResult:
         """Handle an HTML page."""
         logging.debug("Handling content as HTML")
-        self.__init_browser()
 
-        # Until the Page.setContent() method allows options, writing the HTML
-        # document to a temporary file and navigating to it with Page.goto() is
-        # the only way to leverage the `waitUntil` option to give time for the
-        # page's contents to load. Support for options in Page.setContent() is
-        # expected in pyppeteer when the puppeteer v2.1.1 feature parity rewrite
-        # is completed per:
-        # https://github.com/pyppeteer/pyppeteer/issues/134 for more information
-        with tempfile.NamedTemporaryFile(suffix=".html") as fp:
-            # Output to a temporary file so it's available to the browser
-            fp.write(contents)
-            fp.flush()
+        self.__class__._start_browser()
 
-            logging.debug("Navigating to temporary file '%s'", fp.name)
+        # We verify that _browser is not None above so we can safely ignore the
+        # following mypy error:
+        # Item "None" of "Browser | None" has no attribute "new_page"  [union-attr]
+        with self.__class__._browser.new_page() as page:  # type: ignore[union-attr]
+            # Set the default timeout for all Page actions to the
+            # value of self_timeout (in milliseconds)
+            page.set_default_timeout(self._timeout * 1000)
 
-            try:
-                # Wait for everything to load after navigating to the temporary file
-                self._event_loop.run_until_complete(
-                    self._browser_page.goto(
-                        f"file://{fp.name}",
-                        {
-                            # Wait for load and networkidle2 events up to the
-                            # value of self_timeout (in milliseconds)
-                            "timeout": self._timeout * 1000,
-                            "waitUntil": ["load", "networkidle2"],
-                        },
-                    )
+            # Until the Page.setContent() method allows options, writing the HTML
+            # document to a temporary file and navigating to it with Page.goto() is
+            # the only way to leverage the `waitUntil` option to give time for the
+            # page's contents to load. Support for options in Page.setContent() is
+            # expected in pyppeteer when the puppeteer v2.1.1 feature parity rewrite
+            # is completed per:
+            # https://github.com/pyppeteer/pyppeteer/issues/134 for more information
+            with tempfile.NamedTemporaryFile(suffix=".html") as fp:
+                # Output to a temporary file so it's available to the browser
+                fp.write(contents)
+                fp.flush()
+
+                logging.debug("Navigating to temporary file '%s'", fp.name)
+
+                page.goto(
+                    f"file://{fp.name}",
+                    # Use networkidle as a determination that the page has finished
+                    # loading content
+                    wait_until="networkidle",
                 )
-            # Waiting for load and networkidle2 events to occur exceeded the
-            # configured timeout
-            except TimeoutError:
-                pass
-            page_contents: str = self._event_loop.run_until_complete(
-                self._browser_page.content()
-            )
+
+                page_contents: str = page.content()
 
         # Try to guarantee our preferred encoding
         page_contents = bytes(page_contents.encode(self._default_encoding)).decode(
@@ -237,10 +248,10 @@ class UrlHasher:
 
         logging.debug("Parsing rendered page contents")
         soup: BeautifulSoup = BeautifulSoup(page_contents, "lxml")
-        text_elements = soup.find_all(text=True)
-        visible_text_elements = filter(self._is_visible_element, text_elements)
+        string_elements = soup.find_all(string=True)
+        visible_string_elements = filter(self._is_visible_element, string_elements)
         visible_text: str = " ".join(
-            t.strip() for t in visible_text_elements if t.strip()
+            t.strip() for t in visible_string_elements if t.strip()
         )
         visible_bytes: bytes = bytes(visible_text, self._default_encoding)
 
@@ -323,3 +334,7 @@ class UrlHasher:
             processed.hash,
             processed.contents,
         )
+
+
+# Register the cleanup method to be called when the program exits
+atexit.register(UrlHasher._cleanup)

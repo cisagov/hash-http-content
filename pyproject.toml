@@ -46,7 +46,8 @@ dependencies = [
     "beautifulsoup4",
     "docopt",
     "lxml",
-    "pyppeteer",
+    # Oldest version tested against
+    "playwright >= 1.58",
     "requests",
     "schema",
 ]
