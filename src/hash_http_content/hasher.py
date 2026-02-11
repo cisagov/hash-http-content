@@ -216,7 +216,7 @@ class UrlHasher:
         with self.__class__._browser.new_page() as page:  # type: ignore[union-attr]
             # Set the default timeout for all Page actions to the
             # value of self_timeout (in milliseconds)
-            page.set_default_navigation_timeout(self._timeout * 1000)
+            page.set_default_timeout(self._timeout * 1000)
 
             # Until the Page.setContent() method allows options, writing the HTML
             # document to a temporary file and navigating to it with Page.goto() is
