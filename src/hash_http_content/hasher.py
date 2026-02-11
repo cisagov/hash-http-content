@@ -80,8 +80,56 @@ class UrlResult(NamedTuple):
 class UrlHasher:
     """Provide functionality to get the hash digest of a given URL."""
 
-    _playwright: Playwright = sync_playwright().start()
-    _browser: Browser = _playwright.chromium.launch()
+    _playwright: Playwright | None = None
+    _browser: Browser | None = None
+
+    @classmethod
+    def _start_playwright(cls) -> None:
+        """Start a Playwright session if one is not already active."""
+        if cls._playwright is None:
+            logging.debug("Starting Playwright session")
+            cls._playwright = sync_playwright().start()
+
+    @classmethod
+    def _start_browser(cls) -> None:
+        """Start a browser context if one is not already active."""
+        if cls._browser is None:
+            # Ensure that a Playwright session is active before launching a browser
+            cls._start_playwright()
+
+            logging.debug("Launching browser")
+            # We verify that _playwright is not None above so we can safely ignore the
+            # following mypy error:
+            # Item "None" of "Playwright | None" has no attribute "chromium"  [union-attr]
+            cls._browser = cls._playwright.chromium.launch()  # type: ignore[union-attr]
+
+    @classmethod
+    def _cleanup(cls) -> None:
+        """Perform cleanup of any resources used by this class."""
+        logging.debug("Performing cleanup of UrlHasher resources")
+        try:
+            if cls._browser is not None:
+                logging.debug("Closing browser object")
+                cls._browser.close()
+                cls._browser = None
+        except Exception as err:
+            logging.warning(
+                "Encountered a(n) %s exception while attempting to close the browser object: %s",
+                type(err).__name__,
+                err,
+            )
+
+        try:
+            if cls._playwright is not None:
+                logging.debug("Stopping Playwright")
+                cls._playwright.stop()
+                cls._playwright = None
+        except Exception as err:
+            logging.warning(
+                "Encountered a(n) %s exception while attempting to stop Playwright: %s",
+                type(err).__name__,
+                err,
+            )
 
     def __init__(
         self,
@@ -110,13 +158,6 @@ class UrlHasher:
             "text/html": self._handle_html,
             "text/plain": self._handle_plaintext,
         }
-
-    @classmethod
-    def _cleanup(cls) -> None:
-        """Perform cleanup of any resources used by this class."""
-        logging.debug("Performing cleanup of UrlHasher resources")
-        cls._browser.close()
-        cls._playwright.stop()
 
     def _is_visible_element(self, element: PageElement) -> bool:
         """Return True if the given website element would be visible."""
@@ -167,7 +208,12 @@ class UrlHasher:
         """Handle an HTML page."""
         logging.debug("Handling content as HTML")
 
-        with UrlHasher._browser.new_page() as page:
+        self.__class__._start_browser()
+
+        # We verify that _browser is not None above so we can safely ignore the
+        # following mypy error:
+        # Item "None" of "Browser | None" has no attribute "new_page"  [union-attr]
+        with self.__class__._browser.new_page() as page:  # type: ignore[union-attr]
             # Set the default timeout for all Page actions to the
             # value of self_timeout (in milliseconds)
             page.set_default_navigation_timeout(self._timeout * 1000)

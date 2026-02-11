@@ -238,3 +238,59 @@ def test_hash_url_with_redirect():
 
     assert result.status == 200
     assert result.is_redirect is True
+
+
+def test_relaunch_browser():
+    """Test that the browser can be relaunched if it is not available."""
+    expected_digest = "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8"
+
+    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
+
+    # Close the existing browser
+    hash_http_content.UrlHasher._browser.close()
+    hash_http_content.UrlHasher._browser = None
+
+    result = hasher.hash_url("https://example.com")
+
+    assert result.status == 200
+    assert result.is_redirect is False
+    assert result.hash == expected_digest
+
+
+def test_start_new_playwright_session():
+    """Test that a new Playwright session is started if the existing one is not available."""
+    expected_digest = "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8"
+
+    hasher = hash_http_content.UrlHasher(HASH_ALGORITHM)
+
+    # Close the existing browser
+    hash_http_content.UrlHasher._browser.close()
+    hash_http_content.UrlHasher._browser = None
+
+    # Stop the existing Playwright session
+    hash_http_content.UrlHasher._playwright.stop()
+    hash_http_content.UrlHasher._playwright = None
+
+    result = hasher.hash_url("https://example.com")
+
+    assert result.status == 200
+    assert result.is_redirect is False
+    assert result.hash == expected_digest
+
+
+def test_playwright_cleanup():
+    """Test that the Playwright session can be closed."""
+    # Stop the existing Playwright session
+    hash_http_content.UrlHasher._cleanup()
+
+    assert hash_http_content.UrlHasher._playwright is None
+    assert hash_http_content.UrlHasher._browser is None
+
+
+def test_repeated_cleanup():
+    """Test that cleanup can be called multiple times without issue."""
+    # Stop the existing Playwright session
+    hash_http_content.UrlHasher._cleanup()
+
+    # Call cleanup again to verify that it does not raise an exception
+    hash_http_content.UrlHasher._cleanup()
