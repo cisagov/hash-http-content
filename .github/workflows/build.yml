@@ -21,6 +21,7 @@ defaults:
 
 env:
   PIP_CACHE_DIR: ~/.cache/pip
+  PLAYWRIGHT_CACHE_DIR: ~/.cache/ms-playwright
   PRE_COMMIT_CACHE_DIR: ~/.cache/pre-commit
   RUN_TMATE: ${{ secrets.RUN_TMATE }}
   TERRAFORM_DOCS_REPO_BRANCH_NAME: improvement/support_atx_closed_markdown_headers
@@ -262,7 +263,9 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-\
             py${{ steps.setup-python.outputs.python-version }}-
         with:
-          path: ${{ env.PIP_CACHE_DIR }}
+          path: |
+            ${{ env.PIP_CACHE_DIR }}
+            ${{ env.PLAYWRIGHT_CACHE_DIR }}
           # We do not use '**/setup.py' in the cache key so only the 'setup.py'
           # file in the root of the repository is used. This is in case a Python
           # package were to have a 'setup.py' as part of its internal codebase.
@@ -478,7 +481,9 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-\
             py${{ steps.setup-python.outputs.python-version }}-
         with:
-          path: ${{ env.PIP_CACHE_DIR }}
+          path: |
+            ${{ env.PIP_CACHE_DIR }}
+            ${{ env.PLAYWRIGHT_CACHE_DIR }}
           # We do not use '**/setup.py' in the cache key so only the 'setup.py'
           # file in the root of the repository is used. This is in case a Python
           # package were to have a 'setup.py' as part of its internal codebase.
