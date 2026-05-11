@@ -76,7 +76,7 @@ class UrlHasher:
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: dict[str, Any] = {},
+        browser_options: dict[str, Any] | None = None,
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
@@ -91,6 +91,8 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
+        if browser_options is None:
+            browser_options = {}
         self.__browser_options: dict[str, Any] = {
             **default_browser_options,
             **browser_options,
