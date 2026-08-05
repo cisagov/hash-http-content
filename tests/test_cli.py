@@ -71,7 +71,10 @@ def test_list_algorithms(capsys):
 
 def test_invalid_hash_type(capsys):
     """Validate that an unsupported hash type causes an error."""
-    expected_output = f"Invalid algorithm provided. Must be one of: {sorted(hashlib.algorithms_available)}"
+    expected_output = (
+        "Invalid algorithm provided. Must be one of: "
+        f"{sorted(hashlib.algorithms_available)}"
+    )
     return_code = None
     try:
         with patch.object(
@@ -93,7 +96,8 @@ def test_full_run_no_http_schema(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
+            "  Hash (sha256) of contents - "
+            "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
         ]
     )
     return_code = None
@@ -116,7 +120,8 @@ def test_full_run_with_http_schema(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
+            "  Hash (sha256) of contents - "
+            "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
         ]
     )
     return_code = None
@@ -196,10 +201,13 @@ def test_full_run_with_content(capsys):
             "  Retrieved URL - 'https://example.com/'",
             "  Status code - '200'",
             "  Content type - 'text/html'",
-            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
+            "  Hash (sha256) of contents - "
+            "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
             "",
             "Contents:",
-            r"b'Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more'",
+            r"b'Example Domain Example Domain This domain is for use in "
+            "documentation examples without needing permission. Avoid use "
+            "in operations. Learn more'",
         ]
     )
     return_code = None
@@ -226,10 +234,13 @@ def test_full_run_check_redirect_with_content(capsys):
             "  Status code - '200'",
             "  Content type - 'text/html'",
             "  Redirect - False",
-            "  Hash (sha256) of contents - d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
+            "  Hash (sha256) of contents - "
+            "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
             "",
             "Contents:",
-            r"b'Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more'",
+            r"b'Example Domain Example Domain This domain is for use in "
+            r"documentation examples without needing permission. Avoid "
+            r"use in operations. Learn more'",
         ]
     )
     return_code = None
@@ -254,7 +265,8 @@ def test_full_run_json_output(capsys):
     expected_result = [
         {
             "content_type": "text/html",
-            "contents_hash": "d003f90bc10db991b76e6fb480123cfce2cbb2b2784abe687fccccfa7ecacad8",
+            "contents_hash": "d003f90bc10db991b76e6fb480123cfce2cbb2b2784ab"
+            "e687fccccfa7ecacad8",
             "is_redirected": False,
             "requested_url": "https://example.com",
             "retrieved_url": "https://example.com/",

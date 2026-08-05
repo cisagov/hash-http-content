@@ -1,7 +1,8 @@
 """Command line interface to the hash-http-content package.
 
 Usage:
-  site-hash [--hash-algorithm=algorithm] ([--show-content] [--show-redirect] | [--json]) URL ...
+  site-hash [--hash-algorithm=algorithm]
+  ([--show-content] [--show-redirect] | [--json]) URL ...
   site-hash --list-algorithms
   site-hash (-v | --version)
   site-hash (-h | --help)
@@ -41,7 +42,10 @@ def main() -> None:
                 str,
                 Use(str.lower),
                 lambda a: a in hashlib.algorithms_available,
-                error=f"Invalid algorithm provided. Must be one of: {sorted(hashlib.algorithms_available)}",
+                error=(
+                    "Invalid algorithm provided. Must be one of: "
+                    f"{sorted(hashlib.algorithms_available)}"
+                ),
             ),
             str: object,
         }
@@ -93,7 +97,8 @@ def main() -> None:
             if validated_args["--show-redirect"]:
                 print(f"  Redirect - {url_results.is_redirect}")
             print(
-                f"  Hash ({validated_args['--hash-algorithm']}) of contents - {url_results.hash}"
+                f"  Hash ({validated_args['--hash-algorithm']}) of contents - "
+                f"{url_results.hash}"
             )
             if validated_args["--show-content"]:
                 print()

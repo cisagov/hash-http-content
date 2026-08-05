@@ -31,18 +31,7 @@ def get_hasher(hash_algorithm: str) -> "hashlib._Hash":
     except AttributeError:
         # There is no named constructor for the desired hashing algorithm
         try:
-            # mypy relies on typeshed (https://github.com/python/typeshed) for
-            # stdlib type hinting, but it does not have the correct type hints for
-            # hashlib.new(). The PR I submitted to fix them
-            # (https://github.com/python/typeshed/pull/4973) was approved, but I
-            # am not sure if mypy will still have issues with the usage of this
-            # keyword in non Python 3.9 (when the usedforsecurity kwarg was added)
-            # environments. I believe the earliest I can test this will be in mypy
-            # v0.900, and I have made
-            # https://github.com/cisagov/hash-http-content/issues/3 to document
-            # the status of this workaround.
-            # hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
-            hasher = getattr(hashlib, "new")(hash_algorithm, usedforsecurity=False)
+            hasher = hashlib.new(hash_algorithm, usedforsecurity=False)
         except TypeError:
             hasher = hashlib.new(hash_algorithm)
     except TypeError:
@@ -87,7 +76,7 @@ class UrlHasher:
         self,
         hash_algorithm: str,
         encoding: str = "utf-8",
-        browser_options: dict[str, Any] = {},
+        browser_options: dict[str, Any] | None = None,
     ):
         """Initialize an instance of this class."""
         logging.debug("Initializing UrlHasher object")
@@ -102,6 +91,8 @@ class UrlHasher:
         self._timeout: int = 5
         logging.debug("Using request timeout limit of '%d' seconds", self._timeout)
 
+        if browser_options is None:
+            browser_options = {}
         self.__browser_options: dict[str, Any] = {
             **default_browser_options,
             **browser_options,
